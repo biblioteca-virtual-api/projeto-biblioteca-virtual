@@ -26,4 +26,19 @@ public class ResourceExceptionHandler {
 
         return ResponseEntity.status(status).body(err);
     }
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<StandardError> authenticationError(
+            org.springframework.security.core.AuthenticationException e,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        StandardError err = new StandardError(
+                Instant.now(),
+                status.value(),
+                "Falha na autenticação",
+                "E-mail ou senha inválidos.",
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(status).body(err);
+    }
 }

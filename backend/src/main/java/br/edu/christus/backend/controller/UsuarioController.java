@@ -1,7 +1,7 @@
 package br.edu.christus.backend.controller;
 
 import br.edu.christus.backend.domain.Usuario;
-import br.edu.christus.backend.service.UserService;
+import br.edu.christus.backend.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +12,7 @@ import java.util.List;
 public class UsuarioController {
 
     @Autowired
-    private UserService service;
+    private UsuarioService service;
 
     @PostMapping
     public Usuario create(@RequestBody Usuario Usuario){

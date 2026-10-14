@@ -2,8 +2,11 @@ package br.edu.christus.backend.repository;
 
 import br.edu.christus.backend.domain.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface UsuarioRepository
-        extends JpaRepository<Usuario, Long> {
+import java.util.Optional;
 
+@Repository
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+    Optional<Usuario> findByEmail(String email);
 }
