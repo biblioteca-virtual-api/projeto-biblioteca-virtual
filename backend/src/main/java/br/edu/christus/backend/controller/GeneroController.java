@@ -1,6 +1,6 @@
-package main.java.br.edu.christus.backend.controller;
+package br.edu.christus.backend.controller;
 
-import br.edu.christus.backend.domain.model.Genero;
+import br.edu.christus.backend.domain.Genero;
 import br.edu.christus.backend.service.GeneroService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

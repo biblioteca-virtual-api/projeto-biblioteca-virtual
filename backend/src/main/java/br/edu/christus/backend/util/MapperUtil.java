@@ -1,4 +1,4 @@
-package main.java.br.edu.christus.backend.util;
+package br.edu.christus.backend.util;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;

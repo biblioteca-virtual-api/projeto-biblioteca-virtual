@@ -1,4 +1,4 @@
-package main.java.br.edu.christus.backend.domain;
+package br.edu.christus.backend.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -19,7 +19,7 @@ public class Genero {
     @Column(length = 100, nullable = false)
     private String name;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private Boolean ativo=true;
 
 

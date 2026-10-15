@@ -1,0 +1,5 @@
+CREATE TABLE tb_genero (
+    id_genero SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE
+);

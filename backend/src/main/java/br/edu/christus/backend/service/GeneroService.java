@@ -1,6 +1,6 @@
-package main.java.br.edu.christus.backend.service;
+package br.edu.christus.backend.service;
 
-import br.edu.christus.backend.domain.model.Genero;
+import br.edu.christus.backend.domain.Genero;
 import br.edu.christus.backend.repository.GeneroRepository;
 import org.springframework.stereotype.Service;
 

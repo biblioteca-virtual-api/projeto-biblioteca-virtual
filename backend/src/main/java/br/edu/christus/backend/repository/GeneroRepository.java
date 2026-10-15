@@ -1,6 +1,6 @@
-package main.java.br.edu.christus.backend.repository;
+package br.edu.christus.backend.repository;
 
-import br.edu.christus.backend.domain.model.Genero;
+import br.edu.christus.backend.domain.Genero;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface GeneroRepository
