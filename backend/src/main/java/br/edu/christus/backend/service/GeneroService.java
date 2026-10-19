@@ -1,7 +1,9 @@
 package br.edu.christus.backend.service;
 
 import br.edu.christus.backend.domain.Genero;
+import br.edu.christus.backend.exception.ResourceNotFoundException;
 import br.edu.christus.backend.repository.GeneroRepository;
+import br.edu.christus.backend.repository.LivroRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.List;
 public class GeneroService {
 
     private final GeneroRepository generoRepository;
+    private final LivroRepository livroRepository;
     //declaração do repositorio
     //ponte que traduz os comandos para SQL no bd.
 
@@ -17,46 +20,57 @@ public class GeneroService {
     //usa final pra generoRepository só pode ser atribuido uma unica vez
     //final tb garante que generoRepository sempre estara disponivel para GeneroService
 
-    public GeneroService(GeneroRepository generoRepository){
+    public GeneroService(GeneroRepository generoRepository,
+                         LivroRepository livroRepository){
+
         this.generoRepository = generoRepository;
+        this.livroRepository = livroRepository;
     }
 
-    //criar genero
     public Genero create(Genero genero){
         genero.setAtivo(true);
         return generoRepository.save(genero);
     }
 
-    //Listar generos
+
     public List<Genero> listar(){
+
         return generoRepository.findAll();
     }
 
     //buscar pelo id (feito por IA - exceção)
-    public Genero buscarPorId(Long id_genero){
+    public Genero buscarPorId(Long id_genero) {
         return generoRepository.findById(id_genero)
-                .orElseThrow(() -> new RuntimeException("Gênero não encontrado."));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Gênero não encontrado. Id: " + id_genero
+                ));
     }
 
-    //Atualizar
+
     public Genero update(Long id_genero, Genero generoAtualizado){
         Genero genero = buscarPorId(id_genero);
         genero.setName(generoAtualizado.getName());
         return generoRepository.save(genero);
     }
 
-    //excluir
+
     public void delete(Long id_genero){
         Genero genero = buscarPorId(id_genero);
-        generoRepository.delete(genero);
+
+        boolean possuiLivros = livroRepository.existsByGenero_Id_genero(id_genero);
+
+        if (possuiLivros){
+            genero.setAtivo(false);
+            generoRepository.save(genero);
+
+        } else {
+            generoRepository.delete(genero);
+        }
     }
-    //OBS FALTA CONCLUIR!!! se tiver livro associado nao pode excluir, apenas desativar boolean ativo = false
+    //OBS se tiver livro associado nao pode excluir, apenas desativar boolean ativo = false
 
 
 
 }
 
-//OBS: FALTA Implementar a regra de exclusão/desativação do gênero.
-    /*Depende da implementação da entidade Livro.
-    Se o gênero possuir livros associados, não deve ser excluído fisicamente;
-    nesse caso, deve ser apenas desativado (ativo = false). */
+
