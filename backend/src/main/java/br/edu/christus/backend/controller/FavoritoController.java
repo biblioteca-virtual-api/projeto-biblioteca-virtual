@@ -13,31 +13,36 @@ import br.edu.christus.backend.service.FavoritoService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/favoritos/")
+@RequestMapping("/api/v1/favoritos")
 @RequiredArgsConstructor
 public class FavoritoController {
-    private FavoritoService favoritoService;
 
-    @PostMapping("/{livroId}").
-    public ResponseEntity<FavoritoResponseDTO> adicionar(@PathVariable Long livroId) {
-        // Recebe o ID do livro pela URL e solicita ao Service que o favorite.
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(favoritoService.adicionar(livroId));
-        // Retorna HTTP 201 (Created) e os dados do favorito criado.
+    private final FavoritoService favoritoService;
+
+    @PostMapping("/{livroId}")
+    public ResponseEntity<FavoritoResponseDTO> adicionar(
+            @PathVariable Long livroId) {
+
+
+        FavoritoResponseDTO resposta = favoritoService.adicionar(livroId);
+
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
     }
 
-    @GetMapping
+    @GetMapping // Recebe GET /api/v1/favoritos.
     public List<FavoritoResponseDTO> listarMeusFavoritos() {
+
+
         return favoritoService.listarMeusFavoritos();
     }
 
-    @DeleteMapping("/{livroId}")
+    @DeleteMapping("/{livroId}") // Recebe DELETE /api/v1/favoritos/{livroId}.
     public ResponseEntity<Void> remover(@PathVariable Long livroId) {
+
         favoritoService.remover(livroId);
 
-        return ResponseEntity.noContent().build();
         // Retorna HTTP 204
+        return ResponseEntity.noContent().build();
     }
-}
-
 }

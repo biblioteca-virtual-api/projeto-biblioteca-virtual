@@ -4,6 +4,7 @@ import br.edu.christus.backend.domain.Favorito;
 import br.edu.christus.backend.domain.FavoritoId;
 import br.edu.christus.backend.domain.Livro;
 import br.edu.christus.backend.domain.Usuario;
+import br.edu.christus.backend.dto.FavoritoResponseDTO;
 import br.edu.christus.backend.repository.FavoritoRepository;
 import br.edu.christus.backend.repository.LivroRepository;
 import br.edu.christus.backend.repository.UsuarioRepository;
@@ -35,8 +36,15 @@ public class FavoritoService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Usuário autenticado não encontrado."));
     }
+    private FavoritoResponseDTO converterParaDTO(Favorito favorito) {
+        return new FavoritoResponseDTO(
+                favorito.getLivro().getId(),
+                favorito.getLivro().getTitulo(),
+                favorito.getLivro().getIsbn()
+        );
+    }
 
-    public Favorito adicionar(Long livroId) {
+    public FavoritoResponseDTO adicionar(Long livroId) {
         Usuario usuario = buscarUsuarioAutenticado();
 
         Livro livro = livroRepository.findById(livroId)
@@ -59,12 +67,16 @@ public class FavoritoService {
         favorito.setUsuario(usuario);
         favorito.setLivro(livro);
 
-        return favoritoRepository.save(favorito);
+        Favorito favoritoSalvo = favoritoRepository.save(favorito);
+        return converterParaDTO(favoritoSalvo);
     }
 
-    public List<Favorito> listarMeusFavoritos() {
+    public List<FavoritoResponseDTO> listarMeusFavoritos() {
         Usuario usuario = buscarUsuarioAutenticado();
-        return favoritoRepository.findByUsuario_Id(usuario.getId());
+        return favoritoRepository.findByUsuario_Id(usuario.getId())
+                .stream() // Permite processar cada favorito da lista.
+                .map(this::converterParaDTO)
+                .toList(); // Retorna uma lista de DTOs para o Controller.
     }
     public void remover(Long livroId) {
         Usuario usuario = buscarUsuarioAutenticado();
