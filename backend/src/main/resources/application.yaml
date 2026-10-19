@@ -8,18 +8,21 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: ${DB_USER}
     password: ${DB_PASS}
-flyway:
-  enabled: true
-  baseline-on-migrate: true
-  locations: classpath:db/migration
-  url: ${DB_URL}
-  user: ${DB_USER}
-  password: ${DB_PASS}
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    url: ${DB_URL}
+    user: ${DB_USER}
+    password: ${DB_PASS}
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+    open-in-view: false
     properties:
       hibernate:
         format_sql: true
     hibernate:
-      ddl-auto: validate
+      # O schema é responsabilidade do Flyway. "validate" ainda não passa: as entidades usam ids Long (bigint)
+      # e as tabelas usam SERIAL (integer), e falta a migration de tb_favorito. Trocar para validate depois disso.
+      ddl-auto: none

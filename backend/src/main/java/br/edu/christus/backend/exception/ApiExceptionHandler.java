@@ -2,6 +2,7 @@ package br.edu.christus.backend.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -41,6 +42,12 @@ public class ApiExceptionHandler {
                 .map(f -> f.getField() + ": " + f.getDefaultMessage())
                 .collect(Collectors.joining("; "));
         return build(HttpStatus.BAD_REQUEST, "Dados inválidos", msg, request);
+    }
+
+    // RN17/RN19: tentativa de acessar recurso de outro usuário -> 403
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<StandardError> forbidden(AccessDeniedException e, HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, "Acesso negado", e.getMessage(), request);
     }
 
     private ResponseEntity<StandardError> build(HttpStatus status, String error, String message,

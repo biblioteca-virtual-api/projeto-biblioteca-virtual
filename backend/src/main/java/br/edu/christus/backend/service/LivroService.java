@@ -31,8 +31,8 @@ public class LivroService {
 
     @Transactional
     public LivroResponseDTO create(LivroRequestDTO dto) {
-        if (repository.existsByIsbn(dto.getIsbn())) {
-            throw new ConflictException("Já existe um livro com o ISBN " + dto.getIsbn());
+        if (repository.existsByIsbn(dto.isbn())) {
+            throw new ConflictException("Já existe um livro com o ISBN " + dto.isbn());
         }
         Livro livro = new Livro();
         preencher(livro, dto);
@@ -52,8 +52,8 @@ public class LivroService {
     @Transactional
     public LivroResponseDTO update(Long id, LivroRequestDTO dto) {
         Livro livro = buscar(id);
-        if (repository.existsByIsbnAndIdNot(dto.getIsbn(), id)) {
-            throw new ConflictException("Já existe outro livro com o ISBN " + dto.getIsbn());
+        if (repository.existsByIsbnAndIdNot(dto.isbn(), id)) {
+            throw new ConflictException("Já existe outro livro com o ISBN " + dto.isbn());
         }
         preencher(livro, dto);
         return toResponse(repository.save(livro));
@@ -71,20 +71,20 @@ public class LivroService {
 
     // Copia os dados do DTO para a entidade aplicando RN14 e RN12 (create e update).
     private void preencher(Livro livro, LivroRequestDTO dto) {
-        Autor autor = autorRepository.findById(dto.getAutorId())
-                .orElseThrow(() -> new ResourceNotFoundException("Autor não encontrado. Id: " + dto.getAutorId()));
-        Genero genero = generoRepository.findById(dto.getGeneroId())
-                .orElseThrow(() -> new ResourceNotFoundException("Gênero não encontrado. Id: " + dto.getGeneroId()));
+        Autor autor = autorRepository.findById(dto.autorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Autor não encontrado. Id: " + dto.autorId()));
+        Genero genero = generoRepository.findById(dto.generoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Gênero não encontrado. Id: " + dto.generoId()));
 
         // RN12: o gênero precisa estar ATIVO
         if (!Boolean.TRUE.equals(genero.getAtivo())) {
             throw new BusinessException("O gênero '" + genero.getName() + "' está inativo e não pode receber livros.");
         }
 
-        livro.setTitulo(dto.getTitulo());
-        livro.setIsbn(dto.getIsbn());
-        livro.setAnoPublicacao(dto.getAnoPublicacao());
-        livro.setSinopse(dto.getSinopse());
+        livro.setTitulo(dto.titulo());
+        livro.setIsbn(dto.isbn());
+        livro.setAnoPublicacao(dto.anoPublicacao());
+        livro.setSinopse(dto.sinopse());
         livro.setAutor(autor);
         livro.setGenero(genero);
     }

@@ -3,30 +3,30 @@ package br.edu.christus.backend.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-public class LivroRequestDTO {
+/**
+ * DTO de ENTRADA do POST e do PUT de livros.
+ * O cliente envia só os IDs de autor e gênero (RN14); o LivroService busca as
+ * entidades e aplica a RN12 (gênero ativo).
+ */
+public record LivroRequestDTO(
 
-    @NotBlank(message = "O título é obrigatório")
-    @Size(max = 255, message = "O título deve ter no máximo 255 caracteres")
-    private String titulo;
+        @NotBlank(message = "O título é obrigatório")
+        @Size(max = 255, message = "O título deve ter no máximo 255 caracteres")
+        String titulo,
 
-    @NotBlank(message = "O ISBN é obrigatório")
-    @Size(max = 20, message = "O ISBN deve ter no máximo 20 caracteres")
-    private String isbn;
+        @NotBlank(message = "O ISBN é obrigatório")
+        @Size(max = 20, message = "O ISBN deve ter no máximo 20 caracteres")
+        String isbn,
 
-    private Integer anoPublicacao;
+        Integer anoPublicacao,
 
-    private String sinopse;
+        String sinopse,
 
-    @NotNull(message = "O autor é obrigatório")
-    private Long autorId;
+        @NotNull(message = "O autor é obrigatório")
+        Long autorId,
 
-    @NotNull(message = "O gênero é obrigatório")
-    private Long generoId;
+        @NotNull(message = "O gênero é obrigatório")
+        Long generoId
+) {
 }
