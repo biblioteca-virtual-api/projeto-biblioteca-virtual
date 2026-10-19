@@ -1,15 +1,12 @@
 package br.edu.christus.backend.dto;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class FavoritoResponseDTO {
-    private Long livroId;
-    private String livroTitulo;
-    private String livroIsbn;
+/**
+ * DTO de SAÍDA para a listagem e adição de favoritos.
+ * Padrão do projeto: DTOs são representados como `record` (imutáveis e concisos).
+ */
+public record FavoritoResponseDTO(
+        Long livroId,
+        String livroTitulo,
+        String livroIsbn
+) {
 }
