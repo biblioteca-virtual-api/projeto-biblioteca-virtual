@@ -34,6 +34,10 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasRole("ADMINISTRADOR")
                         .requestMatchers("/api/v1/livros", "/api/v1/livros/**").hasRole("ADMINISTRADOR")
+                        // Análise de uploads (RF36 a RF39): só o administrador vê a fila e aprova/rejeita.
+                        // Sem HttpMethod de propósito: com GET, um HEAD escaparia da regra e chegaria ao controller.
+                        .requestMatchers("/api/v1/uploads/pendentes", "/api/v1/uploads/*/aprovar",
+                                "/api/v1/uploads/*/rejeitar").hasRole("ADMINISTRADOR")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
