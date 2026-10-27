@@ -4,6 +4,7 @@ import br.edu.christus.backend.domain.Genero;
 import br.edu.christus.backend.exception.ResourceNotFoundException;
 import br.edu.christus.backend.repository.GeneroRepository;
 import br.edu.christus.backend.repository.LivroRepository;
+import br.edu.christus.backend.repository.UploadRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +14,7 @@ public class GeneroService {
 
     private final GeneroRepository generoRepository;
     private final LivroRepository livroRepository;
+    private final UploadRepository uploadRepository;
     //declaração do repositorio
     //ponte que traduz os comandos para SQL no bd.
 
@@ -21,10 +23,12 @@ public class GeneroService {
     //final tb garante que generoRepository sempre estara disponivel para GeneroService
 
     public GeneroService(GeneroRepository generoRepository,
-                         LivroRepository livroRepository){
+                         LivroRepository livroRepository,
+                         UploadRepository uploadRepository){
 
         this.generoRepository = generoRepository;
         this.livroRepository = livroRepository;
+        this.uploadRepository = uploadRepository;
     }
 
     public Genero create(Genero genero){
@@ -57,9 +61,11 @@ public class GeneroService {
     public void delete(Long id_genero){
         Genero genero = buscarPorId(id_genero);
 
-        boolean possuiLivros = livroRepository.existsByGenero_Id_genero(id_genero);
+        // Uploads também contam: o upload é histórico (RN09) e a FK de tb_upload impede a exclusão
+        boolean possuiLivrosOuUploads = livroRepository.existsByGenero_Id_genero(id_genero)
+                || uploadRepository.existsByGenero_Id_genero(id_genero);
 
-        if (possuiLivros){
+        if (possuiLivrosOuUploads){
             genero.setAtivo(false);
             generoRepository.save(genero);
 
@@ -67,7 +73,7 @@ public class GeneroService {
             generoRepository.delete(genero);
         }
     }
-    //OBS se tiver livro associado nao pode excluir, apenas desativar boolean ativo = false
+    //OBS se tiver livro (ou upload) associado nao pode excluir, apenas desativar boolean ativo = false
 
 
 

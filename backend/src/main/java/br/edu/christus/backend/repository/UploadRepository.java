@@ -27,4 +27,8 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query("SELECT u FROM Upload u WHERE u.id = :id")
     Optional<Upload> findByIdParaAnalise(@Param("id") Long id);
 
+    // RN25: gênero com uploads é desativado em vez de excluído (ver GeneroService.delete).
+    // @Query explícita pelo mesmo motivo do LivroRepository: o "_" de id_genero confunde o Spring Data.
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM Upload u WHERE u.genero.id_genero = :id_genero")
+    boolean existsByGenero_Id_genero(@Param("id_genero") Long id_genero);
 }
