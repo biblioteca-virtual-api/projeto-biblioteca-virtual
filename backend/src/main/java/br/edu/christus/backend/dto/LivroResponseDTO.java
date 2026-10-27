@@ -13,6 +13,8 @@ public record LivroResponseDTO(
         Long autorId,
         String autorNome,
         Long generoId,
-        String generoNome
+        String generoNome,
+        String edicao,
+        String pdf
 ) {
 }

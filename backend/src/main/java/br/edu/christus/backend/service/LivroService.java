@@ -85,6 +85,8 @@ public class LivroService {
         livro.setIsbn(dto.isbn());
         livro.setAnoPublicacao(dto.anoPublicacao());
         livro.setSinopse(dto.sinopse());
+        livro.setEdicao(dto.edicao());
+        livro.setPdf(dto.pdf());
         livro.setAutor(autor);
         livro.setGenero(genero);
     }
@@ -94,6 +96,7 @@ public class LivroService {
         return new LivroResponseDTO(
                 l.getId(), l.getTitulo(), l.getIsbn(), l.getAnoPublicacao(), l.getSinopse(),
                 l.getAutor().getId(), l.getAutor().getNome(),
-                l.getGenero().getId_genero(), l.getGenero().getName());
+                l.getGenero().getId_genero(), l.getGenero().getName(),
+                l.getEdicao(), l.getPdf());
     }
 }

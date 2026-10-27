@@ -28,6 +28,15 @@ public class Livro {
     @Column(columnDefinition = "TEXT")
     private String sinopse;
 
+    // Edição e PDF (V7): opcionais no banco porque os livros antigos não têm;
+    // o livro criado pela aprovação de um upload recebe os dois (RF40).
+    @Column(length = 50)
+    private String edicao;
+
+    // Referência (caminho/URL) do PDF usado na leitura online
+    @Column(length = 500)
+    private String pdf;
+
     // RN14: exatamente um autor (optional = false => obrigatório)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "autor_id", nullable = false)
