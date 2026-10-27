@@ -1,6 +1,9 @@
 package br.edu.christus.backend.service;
 
 import br.edu.christus.backend.domain.Genero;
+import br.edu.christus.backend.dto.GeneroRequestDTO;
+import br.edu.christus.backend.dto.GeneroResponseDTO;
+import br.edu.christus.backend.dto.GeneroUpdateDTO;
 import br.edu.christus.backend.exception.ResourceNotFoundException;
 import br.edu.christus.backend.repository.GeneroRepository;
 import br.edu.christus.backend.repository.LivroRepository;
@@ -31,15 +34,19 @@ public class GeneroService {
         this.uploadRepository = uploadRepository;
     }
 
-    public Genero create(Genero genero){
+    // O gênero é montado do zero a partir do DTO (que não tem id), então o save() sempre faz INSERT
+    // e nunca sobrescreve (nem reativa) um gênero existente. Todo gênero nasce ativo.
+    public GeneroResponseDTO create(GeneroRequestDTO dto){
+        Genero genero = new Genero();
+        genero.setName(dto.name());
         genero.setAtivo(true);
-        return generoRepository.save(genero);
+        return toResponse(generoRepository.save(genero));
     }
 
 
-    public List<Genero> listar(){
+    public List<GeneroResponseDTO> listar(){
 
-        return generoRepository.findAll();
+        return generoRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     //buscar pelo id (feito por IA - exceção)
@@ -51,10 +58,11 @@ public class GeneroService {
     }
 
 
-    public Genero update(Long id_genero, Genero generoAtualizado){
-        Genero genero = buscarPorId(id_genero);
-        genero.setName(generoAtualizado.getName());
-        return generoRepository.save(genero);
+    // O id vem no DTO porque a rota PUT não tem {id}. Só o nome muda: o "ativo" continua como está.
+    public GeneroResponseDTO update(GeneroUpdateDTO dto){
+        Genero genero = buscarPorId(dto.id_genero());
+        genero.setName(dto.name());
+        return toResponse(generoRepository.save(genero));
     }
 
 
@@ -75,6 +83,10 @@ public class GeneroService {
     }
     //OBS se tiver livro (ou upload) associado nao pode excluir, apenas desativar boolean ativo = false
 
+    // Conversão ENTIDADE -> DTO de saída
+    private GeneroResponseDTO toResponse(Genero genero){
+        return new GeneroResponseDTO(genero.getId_genero(), genero.getName(), genero.getAtivo());
+    }
 
 
 }

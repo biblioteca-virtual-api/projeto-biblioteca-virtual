@@ -43,6 +43,10 @@ public class SecurityConfig {
                         // HttpMethod de propósito: assim todo método que não é GET (POST, PUT, DELETE, PATCH...) cai nela.
                         .requestMatchers(HttpMethod.GET, "/api/v1/autores", "/api/v1/autores/**").authenticated()
                         .requestMatchers("/api/v1/autores", "/api/v1/autores/**").hasRole("ADMINISTRADOR")
+                        // Gêneros (RF27/RF28): a mesma regra dos autores. A listagem fica aberta aos perfis logados
+                        // porque o professor escolhe o gênero ao enviar um upload (RF30).
+                        .requestMatchers(HttpMethod.GET, "/api/v1/generos", "/api/v1/generos/**").authenticated()
+                        .requestMatchers("/api/v1/generos", "/api/v1/generos/**").hasRole("ADMINISTRADOR")
                         // Análise de uploads (RF36 a RF39): só o administrador vê a fila e aprova/rejeita.
                         // Sem HttpMethod de propósito: com GET, um HEAD escaparia da regra e chegaria ao controller.
                         .requestMatchers("/api/v1/uploads/pendentes", "/api/v1/uploads/*/aprovar",
