@@ -1,5 +1,6 @@
 package br.edu.christus.backend.controller;
 
+import br.edu.christus.backend.dto.UploadAprovacaoDTO;
 import br.edu.christus.backend.dto.UploadRejeicaoDTO;
 import br.edu.christus.backend.dto.UploadResponseDTO;
 import br.edu.christus.backend.exception.BadRequestException;
@@ -23,6 +24,12 @@ public class UploadController {
     @GetMapping("/pendentes")
     public List<UploadResponseDTO> listarPendentes() {
         return service.listarPendentes();
+    }
+
+    // RF37/RF40: aprova e cria o Livro automaticamente
+    @PutMapping("/{id}/aprovar")
+    public UploadResponseDTO aprovar(@PathVariable Long id, @Valid @RequestBody UploadAprovacaoDTO dto) {
+        return service.aprovar(id, dto);
     }
 
     // RF38/RF39: rejeita; sem motivo retorna 400 (RN06)
