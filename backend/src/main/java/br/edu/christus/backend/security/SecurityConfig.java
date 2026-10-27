@@ -30,9 +30,13 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        // Cadastro público: sem token de ADMINISTRADOR, o UsuarioService só cria ALUNO (RF03).
                         .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasRole("ADMINISTRADOR")
+                        // O resto de /users (listar, excluir...) é só do administrador: a listagem mostra o e-mail
+                        // de todos. Precisa ficar depois do POST público. Sem HttpMethod de propósito: assim
+                        // nenhum método (GET, HEAD, DELETE...) escapa da regra.
+                        .requestMatchers("/api/v1/users", "/api/v1/users/**").hasRole("ADMINISTRADOR")
                         .requestMatchers("/api/v1/livros", "/api/v1/livros/**").hasRole("ADMINISTRADOR")
                         // Análise de uploads (RF36 a RF39): só o administrador vê a fila e aprova/rejeita.
                         // Sem HttpMethod de propósito: com GET, um HEAD escaparia da regra e chegaria ao controller.
