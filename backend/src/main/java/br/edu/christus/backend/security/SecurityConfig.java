@@ -38,6 +38,11 @@ public class SecurityConfig {
                         // nenhum método (GET, HEAD, DELETE...) escapa da regra.
                         .requestMatchers("/api/v1/users", "/api/v1/users/**").hasRole("ADMINISTRADOR")
                         .requestMatchers("/api/v1/livros", "/api/v1/livros/**").hasRole("ADMINISTRADOR")
+                        // Autores (RF26/RN02): qualquer usuário logado lista e consulta (GET), mas só o administrador
+                        // cadastra, edita e exclui. A regra do GET precisa vir antes. A do administrador fica sem
+                        // HttpMethod de propósito: assim todo método que não é GET (POST, PUT, DELETE, PATCH...) cai nela.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/autores", "/api/v1/autores/**").authenticated()
+                        .requestMatchers("/api/v1/autores", "/api/v1/autores/**").hasRole("ADMINISTRADOR")
                         // Análise de uploads (RF36 a RF39): só o administrador vê a fila e aprova/rejeita.
                         // Sem HttpMethod de propósito: com GET, um HEAD escaparia da regra e chegaria ao controller.
                         .requestMatchers("/api/v1/uploads/pendentes", "/api/v1/uploads/*/aprovar",

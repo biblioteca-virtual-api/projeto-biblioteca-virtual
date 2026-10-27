@@ -1,13 +1,17 @@
 package br.edu.christus.backend.controller;
 
-import br.edu.christus.backend.domain.Autor;
+import br.edu.christus.backend.dto.AutorRequestDTO;
+import br.edu.christus.backend.dto.AutorResponseDTO;
 import br.edu.christus.backend.service.AutorService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// Recebe e devolve DTOs, nunca a entidade Autor: assim o POST não sobrescreve um autor existente.
+// Só o ADMINISTRADOR cadastra, edita e exclui (SecurityConfig); qualquer usuário logado lista e consulta.
 @RestController
 @RequestMapping("/api/v1/autores")
 public class AutorController {
@@ -16,23 +20,23 @@ public class AutorController {
     private AutorService service;
 
     @PostMapping
-    public Autor create(@RequestBody Autor autor) {
-        return service.create(autor);
+    public AutorResponseDTO create(@Valid @RequestBody AutorRequestDTO dto) {
+        return service.create(dto);
     }
 
     @GetMapping
-    public List<Autor> findAll() {
+    public List<AutorResponseDTO> findAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public Autor findById(@PathVariable Long id) {
+    public AutorResponseDTO findById(@PathVariable Long id) {
         return service.findById(id);
     }
 
     @PutMapping("/{id}")
-    public Autor update(@PathVariable Long id, @RequestBody Autor autor) {
-        return service.update(id, autor);
+    public AutorResponseDTO update(@PathVariable Long id, @Valid @RequestBody AutorRequestDTO dto) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
