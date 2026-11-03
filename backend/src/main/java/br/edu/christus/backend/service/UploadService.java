@@ -17,6 +17,13 @@ import br.edu.christus.backend.repository.UploadRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import br.edu.christus.backend.domain.Genero;
+import br.edu.christus.backend.domain.Usuario;
+import br.edu.christus.backend.repository.GeneroRepository;
+import br.edu.christus.backend.repository.UsuarioRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 
@@ -29,6 +36,9 @@ public class UploadService {
     private final LivroService livroService;
     private final LivroRepository livroRepository;
     private final AutorRepository autorRepository;
+    private final GeneroRepository generoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final UploadArquivoService uploadArquivoService;
 
     // RF36: uploads aguardando análise.
     @Transactional(readOnly = true)
@@ -103,5 +113,137 @@ public class UploadService {
                 u.getProfessor().getId(), u.getProfessor().getNome(),
                 u.getStatus(), u.getMotivoRejeicao(),
                 (u.getLivro() != null) ? u.getLivro().getId() : null);
+    }
+    @Transactional
+    public UploadResponseDTO criar(
+            String titulo,
+            String autor,
+            Long generoId,
+            String edicao,
+            Integer anoPublicacao,
+            MultipartFile arquivo) {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+
+        Usuario professor = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Usuário autenticado não encontrado."));
+
+        Genero genero = generoRepository.findById(generoId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Gênero não encontrado. Id: " + generoId));
+
+        // Salva o PDF no servidor e recebe o caminho do arquivo.
+        String caminhoPdf = uploadArquivoService.salvar(arquivo);
+
+        // Cria o registro do upload.
+        Upload upload = new Upload();
+        upload.setTitulo(titulo);
+        upload.setAutor(autor);
+        upload.setGenero(genero);
+        upload.setEdicao(edicao);
+        upload.setAnoPublicacao(anoPublicacao);
+        upload.setPdf(caminhoPdf);
+        upload.setProfessor(professor);
+        upload.setStatus(StatusUpload.PENDENTE);
+
+        return toResponse(repository.save(upload));
+    }
+
+    //busca o professor e utiliza o ID para consultar os registros dele
+    @Transactional(readOnly = true)
+    public List<UploadResponseDTO> listarMeusUploads() {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+
+        Usuario professor = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Usuário autenticado não encontrado."));
+
+        return repository.findByProfessor_IdOrderByIdDesc(professor.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional
+    public UploadResponseDTO editar(
+            Long id,
+            String titulo,
+            String autor,
+            Long generoId,
+            String edicao,
+            Integer anoPublicacao,
+            MultipartFile arquivo) {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+
+        Usuario professor = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Usuário autenticado não encontrado."));
+
+        Upload upload = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Upload não encontrado. Id: " + id));
+
+        if (!upload.getProfessor().getId().equals(professor.getId())) {
+            throw new AccessDeniedException(
+                    "Você não tem permissão para editar este upload.");
+        }
+
+        if (upload.getStatus() != StatusUpload.REJEITADO) {
+            throw new ConflictException(
+                    "Somente uploads rejeitados podem ser editados.");
+        }
+
+        Genero genero = generoRepository.findById(generoId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Gênero não encontrado. Id: " + generoId));
+
+        upload.setTitulo(titulo);
+        upload.setAutor(autor);
+        upload.setGenero(genero);
+        upload.setEdicao(edicao);
+        upload.setAnoPublicacao(anoPublicacao);
+
+        if (arquivo != null && !arquivo.isEmpty()) {
+            String novoCaminhoPdf = uploadArquivoService.salvar(arquivo);
+            upload.setPdf(novoCaminhoPdf);
+        }
+
+        return toResponse(repository.save(upload));
+    }
+
+    @Transactional
+    public UploadResponseDTO reenviar(Long id) {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+
+        Usuario professor = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Usuário autenticado não encontrado."));
+
+        Upload upload = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Upload não encontrado. Id: " + id));
+
+        if (!upload.getProfessor().getId().equals(professor.getId())) {
+            throw new AccessDeniedException(
+                    "Você não tem permissão para reenviar este upload.");
+        }
+
+        if (upload.getStatus() != StatusUpload.REJEITADO) {
+            throw new ConflictException(
+                    "Somente uploads rejeitados podem ser reenviados.");
+        }
+
+        upload.setStatus(StatusUpload.PENDENTE);
+        upload.setMotivoRejeicao(null);
+
+        return toResponse(repository.save(upload));
     }
 }

@@ -8,11 +8,14 @@ import br.edu.christus.backend.service.UploadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.PostMapping;
 import java.util.List;
 
 // Análise de uploads pelo ADMINISTRADOR (RF36 a RF44); o acesso é restrito no SecurityConfig.
-// As rotas do professor (enviar, consultar, corrigir, excluir e reenviar) ficam para a A12.
+
 @RestController
 @RequestMapping("/api/v1/uploads")
 @RequiredArgsConstructor
@@ -42,4 +45,49 @@ public class UploadController {
         }
         return service.rejeitar(id, dto);
     }
+    //multipart (envia o pdf e dados na mesma requisição HTTP
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UploadResponseDTO criar(
+            @RequestParam String titulo,
+            @RequestParam String autor,
+            @RequestParam Long generoId,
+            @RequestParam String edicao,
+            @RequestParam Integer anoPublicacao,
+            @RequestParam MultipartFile arquivo) {
+
+        return service.criar(
+                titulo,
+                autor,
+                generoId,
+                edicao,
+                anoPublicacao,
+                arquivo
+        );
+    }
+    // Lista somente os uploads do prof autenticado
+    @GetMapping("/meus")
+    public List<UploadResponseDTO> listarMeusUploads(){
+        return service.listarMeusUploads();
+    }
+
+    // Professor edita somente uploads REJEITADOS e o PDF é opcional
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UploadResponseDTO editar(
+            @PathVariable Long id,
+            @RequestParam String titulo,
+            @RequestParam String autor,
+            @RequestParam Long generoId,
+            @RequestParam String edicao,
+            @RequestParam Integer anoPublicacao,
+            @RequestParam(required = false) MultipartFile arquivo) {
+
+        return service.editar(
+                id, titulo, autor, generoId, edicao, anoPublicacao, arquivo);
+    }
+
+    @PutMapping("/{id}/reenviar")
+    public UploadResponseDTO reenviar(@PathVariable Long id) {
+        return service.reenviar(id);
+    }
+
 }
