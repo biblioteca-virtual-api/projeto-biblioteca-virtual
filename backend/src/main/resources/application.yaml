@@ -26,3 +26,7 @@ spring:
       # O schema é responsabilidade do Flyway. "validate" ainda não passa: as entidades usam ids Long (bigint)
       # e as tabelas usam SERIAL (integer), e falta a migration de tb_favorito. Trocar para validate depois disso.
       ddl-auto: none
+
+      app:
+        upload:
+          dir: uploads

@@ -1,3 +1,4 @@
+
 package br.edu.christus.backend.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,38 +28,101 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
+
+                        // Autenticação e cadastro público
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-                        // Cadastro público: sem token de ADMINISTRADOR, o UsuarioService só cria ALUNO (RF03).
                         .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        // O resto de /users (listar, excluir...) é só do administrador: a listagem mostra o e-mail
-                        // de todos. Precisa ficar depois do POST público. Sem HttpMethod de propósito: assim
-                        // nenhum método (GET, HEAD, DELETE...) escapa da regra.
-                        .requestMatchers("/api/v1/users", "/api/v1/users/**").hasRole("ADMINISTRADOR")
-                        .requestMatchers("/api/v1/livros", "/api/v1/livros/**").hasRole("ADMINISTRADOR")
-                        // Autores (RF26/RN02): qualquer usuário logado lista e consulta (GET), mas só o administrador
-                        // cadastra, edita e exclui. A regra do GET precisa vir antes. A do administrador fica sem
-                        // HttpMethod de propósito: assim todo método que não é GET (POST, PUT, DELETE, PATCH...) cai nela.
-                        .requestMatchers(HttpMethod.GET, "/api/v1/autores", "/api/v1/autores/**").authenticated()
-                        .requestMatchers("/api/v1/autores", "/api/v1/autores/**").hasRole("ADMINISTRADOR")
-                        // Gêneros (RF27/RF28): a mesma regra dos autores. A listagem fica aberta aos perfis logados
-                        // porque o professor escolhe o gênero ao enviar um upload (RF30).
-                        .requestMatchers(HttpMethod.GET, "/api/v1/generos", "/api/v1/generos/**").authenticated()
-                        .requestMatchers("/api/v1/generos", "/api/v1/generos/**").hasRole("ADMINISTRADOR")
-                        // Análise de uploads (RF36 a RF39): só o administrador vê a fila e aprova/rejeita.
-                        // Sem HttpMethod de propósito: com GET, um HEAD escaparia da regra e chegaria ao controller.
-                        .requestMatchers("/api/v1/uploads/pendentes", "/api/v1/uploads/*/aprovar",
-                                "/api/v1/uploads/*/rejeitar").hasRole("ADMINISTRADOR")
+
+                        // Swagger
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
+                        // Usuários: somente administrador
+                        .requestMatchers(
+                                "/api/v1/users",
+                                "/api/v1/users/**"
+                        ).hasRole("ADMINISTRADOR")
+
+                        // Livros: somente administrador
+                        .requestMatchers(
+                                "/api/v1/livros",
+                                "/api/v1/livros/**"
+                        ).hasRole("ADMINISTRADOR")
+
+                        // Autores: qualquer usuário autenticado pode consultar
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/autores",
+                                "/api/v1/autores/**"
+                        ).authenticated()
+
+                        // Demais operações de autores: administrador
+                        .requestMatchers(
+                                "/api/v1/autores",
+                                "/api/v1/autores/**"
+                        ).hasRole("ADMINISTRADOR")
+
+                        // Gêneros: qualquer usuário autenticado pode consultar
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/generos",
+                                "/api/v1/generos/**"
+                        ).authenticated()
+
+                        // Demais operações de gêneros: administrador
+                        .requestMatchers(
+                                "/api/v1/generos",
+                                "/api/v1/generos/**"
+                        ).hasRole("ADMINISTRADOR")
+
+                        // Uploads: operações do administrador
+                        .requestMatchers(
+                                "/api/v1/uploads/pendentes",
+                                "/api/v1/uploads/*/aprovar",
+                                "/api/v1/uploads/*/rejeitar"
+                        ).hasRole("ADMINISTRADOR")
+
+                        // Uploads: operações do professor
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/uploads"
+                        ).hasRole("PROFESSOR")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/uploads/meus"
+                        ).hasRole("PROFESSOR")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/v1/uploads/*"
+                        ).hasRole("PROFESSOR")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/v1/uploads/*/reenviar"
+                        ).hasRole("PROFESSOR")
+
+                        // Demais endpoints exigem autenticação
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(
+                        securityFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                )
                 .build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration
+    ) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
